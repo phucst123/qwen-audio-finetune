@@ -1,0 +1,12 @@
+transformers>=4.36.0
+datasets
+peft
+bitsandbytes
+hf_transfer
+tensorboard
+accelerate
+pandas
+matplotlib
+librosa
+pillow
+torch>=2.0.0
