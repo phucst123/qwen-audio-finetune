@@ -46,6 +46,7 @@ def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
     )
 
     training_args = TrainingArguments(
+        label_names=["labels"],
         num_train_epochs=EPOCHS,
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
