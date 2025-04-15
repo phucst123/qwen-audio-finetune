@@ -6,11 +6,11 @@ DEBUG = False
 
 # Model configuration
 MODEL_ID = "Qwen/Qwen2-Audio-7B-Instruct"
-TORCH_DTYPE = torch.bfloat16  # Use torch.float16 for T4 GPUs
+TORCH_DTYPE = torch.float16  # Use torch.float16 for T4 GPUs
 DEVICE = "cuda"
 QUANT_CONFIG = BitsAndBytesConfig(
     load_in_4bit=True,
-    bnb_4bit_compute_dtype=TORCH_DTYPE,
+    bnb_4bit_compute_dtype=TORCH_DTYPE,  # bfloat16 if on ampere, lovelace, ada or hopper
     bnb_4bit_use_double_quant=True,
     bnb_4bit_quant_type="nf4",
 )

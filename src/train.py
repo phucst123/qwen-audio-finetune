@@ -62,8 +62,8 @@ def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
         # save_strategy="steps",
         # save_steps=SAVE_STEPS,
         # save_total_limit=SAVE_TOTAL_LIMIT,
-        # fp16=True,  # if using Colab, but then you need to use bitsandbytes quantization
-        bf16=True,
+        fp16=True,  # if using Colab, but then you need to use bitsandbytes quantization
+        # bf16=True,
         remove_unused_columns=False,
         report_to="tensorboard",
         run_name=run_name,
