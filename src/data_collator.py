@@ -87,7 +87,7 @@ class AudioDataCollator:
             raise
 
         # Prepare the labels
-        labels = inputs.input_ids.clone()
+        labels = inputs.input_ids.clone().to(inputs.input_ids.dtype)
 
         if DEBUG:
             print("\n===== DEBUGGING INPUT =====\n")
@@ -125,11 +125,14 @@ class AudioDataCollator:
 
                 if DEBUG:
                     print(f"Assistant start index: {assistant_start_idx}")
+                mask_value = torch.tensor(
+                    -100, dtype=labels.dtype, device=labels.device
+                )
 
                 if assistant_start_idx != -1:  # Check if the sequence exists
                     # Mask everything before the assistant start token
                     labels[i, : assistant_start_idx + len(assistant_start_tokens)] = (
-                        -100
+                        mask_value
                     )
                 else:
                     # Fallback if the sequence is not found
@@ -150,7 +153,7 @@ class AudioDataCollator:
         return {
             "input_ids": inputs.input_ids,
             "attention_mask": inputs.attention_mask,
-            "input_features": inputs.input_features.to(torch.bfloat16),
-            "feature_attention_mask": inputs.feature_attention_mask.to(torch.bfloat16),
+            "input_features": inputs.input_features,
+            "feature_attention_mask": inputs.feature_attention_mask,
             "labels": labels,
         }
