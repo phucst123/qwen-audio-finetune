@@ -16,8 +16,9 @@ QUANT_CONFIG = BitsAndBytesConfig(
 )
 
 # Data configuration
-TRAIN_DIR = "train.csv"
-VAL_DIR = "val.csv"
+TRAIN_PATH = "train.csv"
+VAL_PATH = "val.csv"
+TEST_PATH = "test.csv"
 TASK_PROMPT = "Describe the audio in detail"
 MAX_LENGTH = 512
 
@@ -27,7 +28,7 @@ EPOCHS = 1
 SCHEDULE = "constant"  # Options: "constant", "cosine"
 BATCH_SIZE = 4
 GRADIENT_ACCUMULATION_STEPS = 1
-WARMUP_STEPS = 50
+WARMUP_STEPS = 0  # 50
 WEIGHT_DECAY = 0.01
 LOGGING_STEPS = 0.1
 EVAL_STEPS = 0.2

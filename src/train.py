@@ -87,7 +87,7 @@ def main():
         MODEL_ID,
         torch_dtype=TORCH_DTYPE,
         # attn_implementation="flash_attention_2", # Do not use this for quantization, sometimes it will cause error
-        # quantization_config=QUANT_CONFIG,
+        quantization_config=QUANT_CONFIG,
     ).to(DEVICE)
 
     # Apply LoRA
@@ -104,8 +104,9 @@ def main():
     model.print_trainable_parameters()
 
     # Datasets
-    train_dataset = AudioDataset(TRAIN_DIR)
-    val_dataset = AudioDataset(VAL_DIR)
+    train_dataset = AudioDataset(TRAIN_PATH)
+    val_dataset = AudioDataset(VAL_PATH)
+    test_dataset = AudioDataset(TEST_PATH)
 
     # Data collator
     data_collator = AudioDataCollator(processor=processor)
@@ -132,6 +133,8 @@ def main():
     # Evaluate the model
     model.eval()
     run_model_evaluation(val_dataset, model, processor, DEVICE)
+
+    run_model_evaluation(test_dataset, model, processor, DEVICE)
 
 
 if __name__ == "__main__":
