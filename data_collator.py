@@ -5,7 +5,7 @@ from typing import Dict, List
 import librosa
 from io import BytesIO
 from urllib.request import urlopen
-from src.config import DEBUG, TASK_PROMPT, MAX_LENGTH
+from config import DEBUG, TASK_PROMPT, MAX_LENGTH
 
 
 class AudioDataCollator:

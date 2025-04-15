@@ -2,10 +2,11 @@ from transformers import Qwen2AudioForConditionalGeneration, AutoProcessor
 from transformers import Trainer, TrainingArguments
 from peft import LoraConfig, get_peft_model
 from torch.utils.data import DataLoader
-from src.config import *
-from src.datasets import AudioDataset
-from src.data_collator import AudioDataCollator
-from src.evaluation import run_model_evaluation
+from config import *
+
+from data_collator import AudioDataCollator
+from evaluation import run_model_evaluation
+from custom_datasets import AudioDataset
 
 from typing import Dict
 import torch

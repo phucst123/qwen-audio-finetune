@@ -1,5 +1,5 @@
-from src.inference import run_inference
-from src.config import TASK_PROMPT
+from inference import run_inference
+from config import TASK_PROMPT
 
 
 def run_model_evaluation(dataset):

@@ -2,7 +2,7 @@ import os
 import librosa
 from io import BytesIO
 from urllib.request import urlopen
-from src.config import DEBUG, TASK_PROMPT, MAX_LENGTH
+from config import DEBUG, TASK_PROMPT, MAX_LENGTH
 
 
 def run_inference(audio_url: str, model, processor, device: str):
