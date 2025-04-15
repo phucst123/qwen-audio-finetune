@@ -90,7 +90,7 @@ def main():
         MODEL_ID,
         torch_dtype=TORCH_DTYPE,
         # attn_implementation="flash_attention_2", # Do not use this for quantization, sometimes it will cause error
-        quantization_config=QUANT_CONFIG,
+        # quantization_config=QUANT_CONFIG,
     ).to(DEVICE)
 
     # Apply LoRA
