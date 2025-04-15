@@ -29,7 +29,7 @@ class AudioDataCollator:
                         f"Audio length {len(audio)} exceeds max length {self.max_length}. Truncating..."
                     )
                 audio = audio[: self.max_length]
-            return audio.astype(np.float32)
+            return audio.astype(np.float16)
         except Exception as e:
             raise RuntimeError(f"Failed to process audio from {audio_url}: {str(e)}")
 
