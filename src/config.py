@@ -7,7 +7,7 @@ DEBUG = False
 # Model configuration
 MODEL_ID = "Qwen/Qwen2-Audio-7B-Instruct"
 TORCH_DTYPE = torch.bfloat16  # Use torch.float16 for T4 GPUs
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda"
 QUANT_CONFIG = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_compute_dtype=torch.bfloat16,
@@ -18,7 +18,7 @@ QUANT_CONFIG = BitsAndBytesConfig(
 # Data configuration
 TRAIN_DIR = "train.csv"
 VAL_DIR = "val.csv"
-TASK_PROMPT = "FILL IN THE BLANKS: "
+TASK_PROMPT = "Describe the audio in detail"
 MAX_LENGTH = 512
 
 # Training configuration

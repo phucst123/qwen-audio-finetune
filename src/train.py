@@ -1,28 +1,42 @@
+from transformers import Qwen2AudioForConditionalGeneration, AutoProcessor
 from transformers import Trainer, TrainingArguments
+from peft import LoraConfig, get_peft_model
 from torch.utils.data import DataLoader
-from src.config import (
-    EPOCHS,
-    BATCH_SIZE,
-    LEARNING_RATE,
-    SCHEDULE,
-    WARMUP_STEPS,
-    WEIGHT_DECAY,
-    LOGGING_STEPS,
-    EVAL_STEPS,
-    SAVE_STEPS,
-    SAVE_TOTAL_LIMIT,
-    OUTPUT_DIR,
-    LOGGING_DIR,
-    TRAIN_DIR,
-    VAL_DIR,
-    DEVICE,
-    TASK_PROMPT,
-)
+from src.config import *
 from src.datasets import AudioDataset
 from src.data_collator import AudioDataCollator
-from src.utils import initialize_model_and_processor, apply_lora, inspect_batch
 from src.evaluation import run_model_evaluation
-from huggingface_hub import notebook_login
+
+from typing import Dict
+import torch
+
+
+def inspect_batch(batch: Dict[str, torch.Tensor], processor) -> None:
+    print("\n===== DETAILED BATCH INSPECTION =====\n")
+    for key, tensor in batch.items():
+        print(f"\n{key}")
+        print(f"Shape: {tensor.shape}")
+        print(f"Type: {tensor.dtype}")
+        print(f"Device: {tensor.device}")
+        if key not in ["input_features", "feature_attention_mask"]:
+            print(f"First row: {tensor[0].tolist()}")
+
+    if "input_ids" in batch:
+        print("\n===== DECODED Input_ids =====\n")
+        first_input = batch["input_ids"][0].tolist()
+        decoded_input = processor.tokenizer.decode(
+            first_input, skip_special_tokens=False
+        )
+        print(f"Decoded input (First row):\n{decoded_input}")
+
+    if "labels" in batch:
+        print("\n===== DECODED Labels =====\n")
+        first_label = batch["labels"][0].tolist()
+        first_label = [token for token in first_label if token != -100]
+        decoded_label = processor.tokenizer.decode(
+            first_label, skip_special_tokens=False
+        )
+        print(f"Decoded label (First row):\n{decoded_label}")
 
 
 def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
@@ -49,7 +63,7 @@ def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
         save_total_limit=SAVE_TOTAL_LIMIT,
         bf16=True,
         remove_unused_columns=False,
-        report_to="tensorboard",
+        reponotebook_loginrt_to="tensorboard",
         run_name=run_name,
         logging_dir=f"{LOGGING_DIR}/{run_name}",
         gradient_checkpointing=True,
@@ -67,24 +81,37 @@ def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
 
 
 def main():
-    # Login to Hugging Face
-    notebook_login()
 
-    # Load model and processor
-    model, processor = initialize_model_and_processor()
+    processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
+    model = Qwen2AudioForConditionalGeneration.from_pretrained(
+        MODEL_ID,
+        torch_dtype=TORCH_DTYPE,
+        # attn_implementation="flash_attention_2", # Do not use this for quantization, sometimes it will cause error
+        # quantization_config=QUANT_CONFIG,
+    ).to(DEVICE)
 
     # Apply LoRA
-    model = apply_lora(model)
+    lora_config = LoraConfig(
+        r=LORA_R,
+        lora_alpha=LORA_ALPHA,
+        lora_dropout=LORA_DROPOUT,
+        use_rslora=USE_RSLORA,
+        target_modules=TARGET_MODULES,
+        bias=BIAS,
+        task_type=TASK_TYPE,
+    )
+    model = get_peft_model(model, lora_config)
+    model.print_trainable_parameters()
 
-    # Load datasets
+    # Datasets
     train_dataset = AudioDataset(TRAIN_DIR)
     val_dataset = AudioDataset(VAL_DIR)
 
-    # Initialize data collator
+    # Data collator
     data_collator = AudioDataCollator(processor=processor)
 
-    # Inspect a batch (optional, for debugging)
-    if False:  # Set to True to inspect
+    # Inspect the batch
+    if DEBUG:
         dataloader = DataLoader(
             train_dataset, batch_size=1, collate_fn=data_collator, shuffle=True
         )
@@ -92,7 +119,7 @@ def main():
             inspect_batch(batch, processor)
             break
 
-    # Setup trainer
+    # Trainer
     trainer = setup_trainer(model, processor, train_dataset, val_dataset, data_collator)
 
     # Train the model

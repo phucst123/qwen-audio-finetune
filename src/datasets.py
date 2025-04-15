@@ -12,7 +12,7 @@ class AudioDataset(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
         return {
-            "id": row["id"],
+            "id": row["SourceAudio ID"],
             "url": row["url"],
-            "description": row["description"],
+            "description": row["Description"],
         }
