@@ -150,7 +150,7 @@ class AudioDataCollator:
         return {
             "input_ids": inputs.input_ids,
             "attention_mask": inputs.attention_mask,
-            "input_features": inputs.input_features,
-            "feature_attention_mask": inputs.feature_attention_mask,
+            "input_features": inputs.input_features.to(torch.bfloat16),
+            "feature_attention_mask": inputs.feature_attention_mask.to(torch.bfloat16),
             "labels": labels,
         }

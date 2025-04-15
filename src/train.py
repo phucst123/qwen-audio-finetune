@@ -133,8 +133,6 @@ def main():
 
     # Evaluate the model
     model.eval()
-    run_model_evaluation(val_dataset, model, processor, DEVICE)
-
     run_model_evaluation(test_dataset, model, processor, DEVICE)
 
 
