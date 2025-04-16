@@ -1,3 +1,5 @@
+typing_extensions==4.8.0
+bitsandbytes==0.43.3
 torch
 pandas
 huggingface_hub
@@ -5,7 +7,6 @@ transformers
 accelerate
 datasets
 peft
-bitsandbytes
 hf_transfer
 tensorboard
 requests

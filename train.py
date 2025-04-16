@@ -1,6 +1,6 @@
 from transformers import Qwen2AudioForConditionalGeneration, AutoProcessor
 from transformers import Trainer, TrainingArguments
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, PeftModel
 from torch.utils.data import DataLoader
 from config import *
 
@@ -41,10 +41,6 @@ def inspect_batch(batch: Dict[str, torch.Tensor], processor) -> None:
 
 
 def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
-    run_name = (
-        f"Qwen2-Audio-7B-Instruct-Lora-{EPOCHS}_ep-"
-        f"{SCHEDULE}_schedule-lr_{LEARNING_RATE}-bs_{BATCH_SIZE}"
-    )
 
     training_args = TrainingArguments(
         label_names=["labels"],
@@ -57,18 +53,18 @@ def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
         weight_decay=WEIGHT_DECAY,
         logging_steps=LOGGING_STEPS,
         output_dir=OUTPUT_DIR,
-        eval_strategy="steps",
+        eval_strategy="no",
         eval_steps=EVAL_STEPS,
         lr_scheduler_type=SCHEDULE,
         # save_strategy="steps",
         # save_steps=SAVE_STEPS,
-        # save_total_limit=SAVE_TOTAL_LIMIT,
+        save_total_limit=SAVE_TOTAL_LIMIT,
         # fp16=True,  # if using Colab, but then you need to use bitsandbytes quantization
         bf16=True,
         remove_unused_columns=False,
         report_to="tensorboard",
-        run_name=run_name,
-        logging_dir=f"{LOGGING_DIR}/{run_name}",
+        run_name=RUN_NAME,
+        logging_dir=f"{LOGGING_DIR}/{RUN_NAME}",
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
     )
@@ -77,7 +73,7 @@ def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
         model=model,
         args=training_args,
         train_dataset=train_dataset,
-        eval_dataset=val_dataset,
+        # eval_dataset=val_dataset,
         data_collator=data_collator,
     )
     return trainer
@@ -86,7 +82,7 @@ def setup_trainer(model, processor, train_dataset, val_dataset, data_collator):
 def main():
 
     processor = AutoProcessor.from_pretrained(MODEL_ID, trust_remote_code=True)
-    model = Qwen2AudioForConditionalGeneration.from_pretrained(
+    base_model = Qwen2AudioForConditionalGeneration.from_pretrained(
         MODEL_ID,
         torch_dtype=TORCH_DTYPE,
         # attn_implementation="flash_attention_2", # Do not use this for quantization, sometimes it will cause error
@@ -103,6 +99,17 @@ def main():
         bias=BIAS,
         task_type=TASK_TYPE,
     )
+
+    if PREVIOUS_MODEL_PATH:
+        prev_lora_model = PeftModel.from_pretrained(base_model, PREVIOUS_MODEL_PATH)
+
+        # Merge weights to incorporate previous LoRA adaptations
+        model = prev_lora_model.merge_and_unload()
+
+        # Apply new LoRA config to the merged model
+    else:
+        model = base_model
+
     model = get_peft_model(model, lora_config)
     model.print_trainable_parameters()
 
@@ -124,7 +131,7 @@ def main():
             break
 
     # Trainer
-    trainer = setup_trainer(model, processor, train_dataset, val_dataset, data_collator)
+    trainer = setup_trainer(model, processor, val_dataset, test_dataset, data_collator)
 
     # Train the model
     trainer.train()
