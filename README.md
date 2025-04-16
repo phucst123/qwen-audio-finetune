@@ -5,20 +5,22 @@ A framework for fine-tuning the Qwen2-Audio-7B-Instruct model for audio understa
 ## Setup
 
 ```bash
+apt update && apt install ffmpeg -y
 pip install -r requirements.txt
 ```
 
 ## Directory Structure
 
 - `config.py`: Configuration parameters
-- `data/`: Dataset loading and processing
-- `model/`: Model loading and utilities
-- `inference.py`: Inference functionality
+- `custom_datasets.py`: Dataset loading 
+- `data_collator.py`: Data loader and processing
+- `inference.py`: Inference script
 - `evaluation.py`: Evaluation script
 - `train.py`: Training script
-- `utils.py`: Common utilities
 
 ## Usage
+
+Modify the path and config within the config.py file
 
 ### Training
 
@@ -26,28 +28,18 @@ pip install -r requirements.txt
 python train.py
 ```
 
-### Inference
+### Evaluation
 
-```python
-from model.model_utils import load_model_and_processor
-from inference import run_inference
-from config import MODEL_ID, DEVICE, TORCH_DTYPE, TASK_PROMPT
-
-# Load model and processor
-model, processor = load_model_and_processor(MODEL_ID, DEVICE, TORCH_DTYPE)
-
-# Run inference
-audio_url = "https://example.com/audio.wav"
-response = run_inference(audio_url, processor, model, DEVICE, TASK_PROMPT)
-print(response)
+```bash
+python evaluation.py
 ```
 
 ## Data Format
 
 The training and validation data should be CSV files with at least the following columns:
-- `id`: Unique identifier for the example
+- `SourceAudioID`: Unique identifier for the example
 - `url`: URL of the audio file
-- `description`: The target text (ground truth)
+- `Description`: The target text (ground truth)
 
 ## Model
 
